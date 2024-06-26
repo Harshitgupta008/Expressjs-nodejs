@@ -181,7 +181,7 @@ const auth = async (req, res, next) => {
 // delete token
 
 const logout = async (req, res, next) => {
-    res.clearCookie("jwt");
+    res.clearCookie("harshit_token");
     res.redirect("/");
     next();
 };
