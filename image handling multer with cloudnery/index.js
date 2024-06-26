@@ -160,27 +160,23 @@ app.post("api/login", async (req, res) => {
 // authentication middleware
 const auth = async (req, res, next) => {
     const check_token = await req.cookie.harshit_token;
+    try {
+        if (!check_token) return res.status(401).send("token are not genrated");
 
-    if (!check_token) return res.status(401).send("token are not genrated");
+        const verifytoken = await jwt.verify(check_token, process.env.SECREATE_TOKEN_KEY);
+        if (!verifytoken) {
+            console.log("token are not verofy")
+            return res.status(400).send("token are not verfyed")
+        }
 
-    const verifytoken = await jwt.verify(check_token, process.env.SECREATE_TOKEN_KEY);
-    if (!verifytoken) {
-        console.log("token are not verofy")
-        return res.status(400).send("token are not verfyed")
+        req.genuser = verifytoken;
+        next();
+    } catch (error) {
+        console.log(`error in finding token part :: ${error}`);
     }
 
-    req.genuser = verifytoken;
-    next();
 
 }
-
-// send detail in about page 😊
-
-app.get('/api/about', auth, async(req,res)=>{
-
-    res.send(req.genuser);
-})
-
 
 // delete token
 
@@ -188,7 +184,21 @@ const logout = async (req, res, next) => {
     res.clearCookie("jwt");
     res.redirect("/");
     next();
-  };
+};
+
+// send detail in about page 😊
+
+app.get('/api/about', auth, async (req, res) => {
+
+    res.send(req.genuser);
+})
+app.get('/api/logout', logout, async (req, res) => {
+
+    res.status(200).send("logout done");
+})
+
+
+
 
 app.listen(port, () => {
     console.log("done express part")
